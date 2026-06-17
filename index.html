@@ -332,6 +332,9 @@ input[type="range"]::-moz-range-thumb{
   position:relative;
   flex:1;
   height:420px;
+}
+.ladder-bands{
+  height:100%;
   display:flex;
   flex-direction:column;
   border-radius:10px;
@@ -583,12 +586,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
           <span style="top:100%">0</span>
         </div>
         <div class="ladder-track" id="ladderTrack">
-          <div class="band band-pass" style="height:10%"><span class="band-letter">A</span></div>
-          <div class="band band-pass" style="height:10%"><span class="band-letter">B</span></div>
-          <div class="band band-pass" style="height:10%"><span class="band-letter">C</span></div>
-          <div class="band band-pass" style="height:10%"><span class="band-letter">D</span></div>
-          <div class="band band-e" style="height:20%"><span class="band-letter">E</span><span class="band-sub">↑ 이수</span></div>
-          <div class="band band-i" style="height:40%"><span class="band-letter">I</span><span class="band-sub">↓ 미이수</span></div>
+          <div class="ladder-bands">
+            <div class="band band-pass" style="height:10%"><span class="band-letter">A</span></div>
+            <div class="band band-pass" style="height:10%"><span class="band-letter">B</span></div>
+            <div class="band band-pass" style="height:10%"><span class="band-letter">C</span></div>
+            <div class="band band-pass" style="height:10%"><span class="band-letter">D</span></div>
+            <div class="band band-e" style="height:20%"><span class="band-letter">E</span><span class="band-sub">↑ 이수</span></div>
+            <div class="band band-i" style="height:40%"><span class="band-letter">I</span><span class="band-sub">↓ 미이수</span></div>
+          </div>
           <div class="range-bar" id="rangeBar"></div>
           <div class="marker marker-low" id="markerLow">
             <div class="marker-line"></div>
