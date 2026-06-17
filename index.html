@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고교학점제 성취도 계산기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-1:#dde6fb;
+  --bg-2:#eef1fc;
+  --sheet:#ffffff;
+  --ink:#1f2937;
+  --ink-soft:#6b7280;
+  --ink-faint:#9aa3b2;
+  --blue:#2f5fdb;
+  --blue-deep:#24439e;
+  --blue-soft:#e4ecfc;
+  --blue-soft-2:#f3f6fd;
+  --border:#e3e9f6;
+  --green:#1f9d55;
+  --green-soft:#e0f5e8;
+  --red:#d6433c;
+  --red-soft:#fbe7e6;
+  --shadow: 0 30px 60px -20px rgba(47,79,150,0.28), 0 8px 20px -10px rgba(47,79,150,0.18);
+  --radius:16px;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',-apple-system,sans-serif;
+  color:var(--ink);
+  background:linear-gradient(150deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-1) 100%);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:48px 20px;
+  line-height:1.6;
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  -webkit-font-smoothing:antialiased;
+}
+
+.sheet{
+  width:100%;
+  max-width:1000px;
+  background:var(--sheet);
+  border-radius:28px;
+  box-shadow:var(--shadow);
+  padding:56px 60px 44px;
+}
+
+/* ---------- Header ---------- */
+.page-header{ text-align:center; margin-bottom:32px; }
+.eyebrow{
+  display:inline-block;
+  font-size:13.5px;
+  font-weight:700;
+  letter-spacing:0.02em;
+  color:var(--blue);
+  margin-bottom:8px;
+}
+h1{
+  font-weight:900;
+  font-size:clamp(28px, 4.5vw, 38px);
+  margin:0 0 12px;
+  color:#16213f;
+  letter-spacing:-0.01em;
+}
+.page-header .lede{
+  max-width:540px;
+  margin:0 auto;
+  color:var(--ink-soft);
+  font-size:15px;
+}
+.header-underline{
+  width:56px;
+  height:5px;
+  border-radius:3px;
+  background:var(--blue);
+  margin:18px auto 0;
+}
+
+/* ---------- Reference table (details) ---------- */
+details.reference{
+  background:var(--blue-soft-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px 20px;
+  margin-bottom:28px;
+}
+details.reference summary{
+  cursor:pointer;
+  font-weight:700;
+  font-size:14.5px;
+  color:var(--ink);
+  outline-offset:4px;
+}
+details.reference summary::marker{ color:var(--blue); }
+table.reference-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  margin-top:14px;
+  font-size:14px;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+table.reference-table th, table.reference-table td{
+  padding:9px 10px;
+  text-align:center;
+}
+table.reference-table td{
+  border-bottom:1px solid var(--border);
+}
+table.reference-table thead th{
+  background:linear-gradient(90deg, var(--blue), var(--blue-deep));
+  color:#ffffff;
+  font-size:12px;
+  letter-spacing:0.04em;
+  font-weight:700;
+}
+tr.tier-pass td{ background:var(--blue-soft); }
+tr.tier-e td{ color:var(--green); font-weight:700; }
+tr.tier-i td{ color:var(--red); font-weight:700; }
+.tag{
+  display:inline-block;
+  font-size:12px;
+  font-weight:700;
+  padding:2px 9px;
+  border-radius:999px;
+}
+.tag-pass{ background:var(--green-soft); color:var(--green); }
+.tag-fail{ background:var(--red-soft); color:var(--red); }
+
+/* ---------- Cards ---------- */
+.card{
+  background:var(--blue-soft-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px 26px;
+}
+.card h2, .card h3{
+  margin:4px 0 16px;
+  font-size:19px;
+  font-weight:700;
+  color:#16213f;
+}
+
+/* ---------- Input card ---------- */
+.input-card{ margin-bottom:26px; }
+.field{ margin-bottom:22px; }
+.field:last-of-type{ margin-bottom:6px; }
+.field-label-row{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:8px;
+  gap:10px;
+}
+.field-label-row label{
+  font-weight:700;
+  font-size:14.5px;
+  color:var(--ink);
+}
+.field-value{
+  display:flex;
+  align-items:baseline;
+  gap:4px;
+  font-weight:700;
+  font-size:15px;
+  color:var(--blue);
+}
+.field-value input[type="number"]{
+  width:62px;
+  text-align:right;
+  border:1px solid var(--border);
+  background:#ffffff;
+  border-radius:8px;
+  padding:5px 7px;
+  font-family:inherit;
+  font-size:inherit;
+  font-weight:inherit;
+  color:var(--blue);
+}
+input[type="range"]{
+  width:100%;
+  -webkit-appearance:none;
+  appearance:none;
+  height:6px;
+  border-radius:4px;
+  background:linear-gradient(to right, var(--blue), var(--border));
+  outline:none;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width:20px; height:20px;
+  border-radius:50%;
+  background:var(--blue);
+  border:3px solid #ffffff;
+  box-shadow:0 0 0 1px var(--blue);
+  cursor:pointer;
+  margin-top:0;
+}
+input[type="range"]::-moz-range-thumb{
+  width:20px; height:20px;
+  border-radius:50%;
+  background:var(--blue);
+  border:3px solid #ffffff;
+  box-shadow:0 0 0 1px var(--blue);
+  cursor:pointer;
+}
+.field-help{
+  margin:8px 0 0;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+.field-help strong{ color:var(--blue); }
+
+/* ---------- exam mode toggle ---------- */
+.exam-mode-row{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  background:#ffffff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  margin-bottom:18px;
+}
+.exam-mode-row input[type="checkbox"]{
+  flex:none;
+  width:20px;
+  height:20px;
+  margin:2px 0 0;
+  accent-color:var(--blue);
+  cursor:pointer;
+}
+.exam-mode-row label{
+  font-weight:700;
+  font-size:14.5px;
+  color:var(--ink);
+  cursor:pointer;
+}
+.exam-mode-row .exam-mode-sub{
+  display:block;
+  font-weight:400;
+  font-size:12.5px;
+  color:var(--ink-soft);
+  margin-top:3px;
+}
+.double-only{ display:none; }
+.double-only.is-active{ display:block; }
+.exam-sub-card{
+  background:#ffffff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px 18px 6px;
+  margin-bottom:18px;
+}
+.exam-sub-card .exam-sub-title{
+  font-size:13px;
+  font-weight:700;
+  color:var(--blue);
+  margin-bottom:14px;
+}
+
+.reset-btn{
+  display:inline-block;
+  background:transparent;
+  border:1.5px solid var(--blue);
+  color:var(--blue);
+  font-family:inherit;
+  font-weight:700;
+  font-size:13.5px;
+  padding:9px 18px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:background 0.15s ease, color 0.15s ease;
+}
+.reset-btn:hover{ background:var(--blue); color:#ffffff; }
+
+/* ---------- Results layout ---------- */
+.summary-banner{
+  background:linear-gradient(90deg, var(--blue), var(--blue-deep));
+  color:#ffffff;
+  border-radius:var(--radius);
+  padding:18px 24px;
+  margin-bottom:22px;
+  font-size:15px;
+}
+.summary-banner strong{ color:#ffe9a8; }
+
+.results-grid{
+  display:grid;
+  grid-template-columns:minmax(260px,1fr) minmax(300px,1.25fr);
+  gap:22px;
+  align-items:start;
+}
+@media (max-width:860px){
+  .results-grid{ grid-template-columns:1fr; }
+}
+
+/* ---------- Ladder ---------- */
+.ladder-desc{
+  font-size:13.5px;
+  color:var(--ink-soft);
+  margin:0 0 16px;
+}
+.ladder-body{
+  display:flex;
+  gap:10px;
+}
+.ladder-axis{
+  position:relative;
+  width:30px;
+  height:420px;
+  flex:0 0 30px;
+}
+.ladder-axis span{
+  position:absolute;
+  right:0;
+  transform:translateY(-50%);
+  font-size:11px;
+  color:var(--ink-soft);
+}
+.ladder-track{
+  position:relative;
+  flex:1;
+  height:420px;
+  display:flex;
+  flex-direction:column;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+.band{
+  position:relative;
+  display:flex;
+  align-items:flex-start;
+  padding:6px 12px;
+  border-top:1px solid rgba(31,42,68,0.08);
+}
+.band:first-child{ border-top:none; }
+.band-pass{ background:var(--blue-soft); color:var(--ink); }
+.band-e{ background:var(--green-soft); color:var(--green); }
+.band-i{ background:var(--red-soft); color:var(--red); }
+.band-letter{
+  font-weight:700;
+  font-size:14px;
+}
+.band-sub{
+  font-size:11px;
+  font-weight:600;
+  margin-left:8px;
+  opacity:0.85;
+  align-self:flex-start;
+  margin-top:1px;
+}
+.range-bar{
+  position:absolute;
+  left:0; right:0;
+  background:rgba(47,95,219,0.16);
+  border-top:2px solid var(--blue);
+  border-bottom:2px solid var(--blue);
+  pointer-events:none;
+  transition:top 0.2s ease, height 0.2s ease;
+}
+.marker{
+  position:absolute;
+  left:0; right:0;
+  display:flex;
+  align-items:center;
+  transform:translateY(-50%);
+  pointer-events:none;
+  transition:top 0.2s ease;
+}
+.marker-line{
+  flex:1;
+  height:2px;
+  background:repeating-linear-gradient(to right, var(--blue) 0 6px, transparent 6px 10px);
+}
+.marker-chip{
+  background:var(--blue);
+  color:#ffffff;
+  font-size:11px;
+  font-weight:700;
+  white-space:nowrap;
+  padding:3px 8px;
+  border-radius:999px;
+  margin-left:6px;
+}
+.marker-high .marker-chip{ background:var(--blue-deep); }
+
+.ladder-summary{
+  margin:16px 0 0;
+  font-size:13.5px;
+  color:var(--ink-soft);
+}
+.ladder-summary strong{ color:var(--ink); }
+
+/* ---------- Table card ---------- */
+table.required-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:14px;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+table.required-table th{
+  text-align:left;
+  font-size:11.5px;
+  letter-spacing:0.03em;
+  color:#ffffff;
+  font-weight:700;
+  padding:11px 12px;
+  background:linear-gradient(90deg, var(--blue), var(--blue-deep));
+}
+table.required-table td{
+  padding:12px 12px;
+  border-bottom:1px solid var(--border);
+}
+table.required-table tr:last-child td{ border-bottom:none; }
+table.required-table td.grade-cell{
+  font-weight:900;
+  font-size:18px;
+  color:#16213f;
+}
+table.required-table td.req-cell{
+  font-weight:700;
+}
+.badge{
+  display:inline-block;
+  font-size:12px;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:999px;
+  white-space:nowrap;
+}
+.badge-secured{ background:var(--green-soft); color:var(--green); }
+.badge-achievable{ background:var(--blue-soft); color:var(--blue); }
+.badge-impossible{ background:var(--red-soft); color:var(--red); }
+
+.table-note{
+  margin:14px 0 0;
+  font-size:12.5px;
+  color:var(--ink-soft);
+}
+
+footer.page-footer{
+  text-align:center;
+  margin-top:32px;
+  font-size:12.5px;
+  color:var(--ink-soft);
+}
+
+/* ---------- Accessibility ---------- */
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible{
+  outline:2px solid var(--blue);
+  outline-offset:3px;
+}
+@media (prefers-reduced-motion: reduce){
+  *{ transition:none !important; }
+}
+
+@media (max-width:680px){
+  body{ padding:24px 12px; }
+  .sheet{ padding:36px 22px 30px; border-radius:20px; }
+  h1{ font-size:25px; }
+}
+@media (max-width:520px){
+  .ladder-body{ gap:6px; }
+  .ladder-axis{ width:24px; flex:0 0 24px; }
+  .ladder-track, .ladder-axis{ height:340px; }
+  .marker-chip{ font-size:10px; padding:2px 6px; }
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="page-header">
+    <span class="eyebrow">2025학년도 · 고교학점제</span>
+    <h1>성취도 계산기</h1>
+    <p class="lede">수행평가 비율과 현재 점수를 입력하면, A~E 등급마다 정기시험(지필고사)에서 몇 점 이상을 받아야 하는지 계산해드려요.</p>
+    <div class="header-underline"></div>
+  </header>
+
+  <details class="reference">
+    <summary>2025학년도 성취도 산정 기준표 보기</summary>
+    <table class="reference-table">
+      <thead><tr><th>성취율</th><th>성취도</th><th>이수 여부</th></tr></thead>
+      <tbody>
+        <tr class="tier-pass"><td>90% 이상</td><td>A</td><td></td></tr>
+        <tr class="tier-pass"><td>80% 이상 90% 미만</td><td>B</td><td></td></tr>
+        <tr class="tier-pass"><td>70% 이상 80% 미만</td><td>C</td><td></td></tr>
+        <tr class="tier-pass"><td>60% 이상 70% 미만</td><td>D</td><td></td></tr>
+        <tr class="tier-e"><td>40% 이상 60% 미만</td><td>E</td><td><span class="tag tag-pass">↑ 이수</span></td></tr>
+        <tr class="tier-i"><td>40% 미만</td><td>I</td><td><span class="tag tag-fail">↓ 미이수</span></td></tr>
+      </tbody>
+    </table>
+  </details>
+
+  <section class="card input-card">
+    <span class="eyebrow">입력</span>
+    <h2>비율과 점수를 입력하세요</h2>
+
+    <div class="field">
+      <div class="field-label-row">
+        <label for="ratioNumber">수행평가 비율</label>
+        <div class="field-value"><input type="number" id="ratioNumber" min="0" max="100" step="1" value="70">%</div>
+      </div>
+      <input type="range" id="ratioSlider" min="0" max="100" step="1" value="70" list="ratioTicks">
+      <datalist id="ratioTicks">
+        <option value="0"></option><option value="10"></option><option value="20"></option>
+        <option value="30"></option><option value="40"></option><option value="50"></option>
+        <option value="60"></option><option value="70"></option><option value="80"></option>
+        <option value="90"></option><option value="100"></option>
+      </datalist>
+      <p class="field-help">정기시험 비율은 자동으로 <strong id="writtenRatioDisplay">30</strong>%로 계산돼요. (수행 + 정기시험 = 100%)</p>
+    </div>
+
+    <div class="exam-mode-row">
+      <input type="checkbox" id="singleExamCheck" checked>
+      <label for="singleExamCheck">정기시험을 한 번만 봐요
+        <span class="exam-mode-sub">체크 해제하면 1차·2차 지필고사 비율을 각각 입력할 수 있어요. (정기시험 만점은 항상 100점)</span>
+      </label>
+    </div>
+
+    <div class="exam-sub-card double-only" id="doubleExamCard">
+      <div class="exam-sub-title">1차 · 2차 지필고사 비율</div>
+      <div class="field">
+        <div class="field-label-row">
+          <label for="firstRatioNumber">1차 지필고사 비율</label>
+          <div class="field-value"><input type="number" id="firstRatioNumber" min="0" max="30" step="1" value="15">%</div>
+        </div>
+        <input type="range" id="firstRatioSlider" min="0" max="30" step="1" value="15">
+        <p class="field-help">2차 지필고사 비율은 자동으로 <strong id="secondRatioDisplay">15</strong>%로 계산돼요. (수행 + 1차 + 2차 = 100%)</p>
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label for="firstScoreNumber">1차 지필고사 점수</label>
+          <div class="field-value"><input type="number" id="firstScoreNumber" min="0" max="100" step="0.5" value="50">점</div>
+        </div>
+        <input type="range" id="firstScoreSlider" min="0" max="100" step="0.5" value="50">
+        <p class="field-help">1차 지필고사는 100점 만점이에요. 이미 받은 점수를 입력하면 2차 지필고사에서 필요한 최소 점수를 계산해드려요.</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label-row">
+        <label for="scoreNumber">현재 수행점수</label>
+        <div class="field-value"><input type="number" id="scoreNumber" min="0" max="70" step="0.5" value="49">점</div>
+      </div>
+      <input type="range" id="scoreSlider" min="0" max="70" step="0.5" value="49">
+      <p class="field-help">수행평가 만점은 비율과 같은 <strong id="perfMaxDisplay">70</strong>점이에요. 정기시험은 100점 만점으로 따로 입력해서 비율만큼 환산해요.</p>
+    </div>
+
+    <button type="button" id="resetBtn" class="reset-btn">기본값으로 초기화</button>
+  </section>
+
+  <div class="summary-banner" id="summaryBanner"></div>
+
+  <div class="results-grid">
+    <section class="card">
+      <span class="eyebrow">성취도 사다리</span>
+      <h3 id="ladderTitle">정기시험 점수에 따른 위치</h3>
+      <p class="ladder-desc" id="ladderDesc">진한 띠는 정기시험 0점일 때부터 100점일 때까지, 현재 수행점수로 도달할 수 있는 총점 구간이에요.</p>
+      <div class="ladder-body">
+        <div class="ladder-axis">
+          <span style="top:0%">100</span>
+          <span style="top:10%">90</span>
+          <span style="top:20%">80</span>
+          <span style="top:30%">70</span>
+          <span style="top:40%">60</span>
+          <span style="top:60%">40</span>
+          <span style="top:100%">0</span>
+        </div>
+        <div class="ladder-track" id="ladderTrack">
+          <div class="band band-pass" style="height:10%"><span class="band-letter">A</span></div>
+          <div class="band band-pass" style="height:10%"><span class="band-letter">B</span></div>
+          <div class="band band-pass" style="height:10%"><span class="band-letter">C</span></div>
+          <div class="band band-pass" style="height:10%"><span class="band-letter">D</span></div>
+          <div class="band band-e" style="height:20%"><span class="band-letter">E</span><span class="band-sub">↑ 이수</span></div>
+          <div class="band band-i" style="height:40%"><span class="band-letter">I</span><span class="band-sub">↓ 미이수</span></div>
+          <div class="range-bar" id="rangeBar"></div>
+          <div class="marker marker-low" id="markerLow">
+            <div class="marker-line"></div>
+            <div class="marker-chip" id="markerLowChip">정기시험 0점 → 49점</div>
+          </div>
+          <div class="marker marker-high" id="markerHigh">
+            <div class="marker-line"></div>
+            <div class="marker-chip" id="markerHighChip">정기시험 100점 → 79점</div>
+          </div>
+        </div>
+      </div>
+      <p class="ladder-summary" id="ladderSummary"></p>
+    </section>
+
+    <section class="card">
+      <span class="eyebrow">필요 점수</span>
+      <h3 id="tableTitle">등급별 정기시험 최소 점수</h3>
+      <table class="required-table">
+        <thead>
+          <tr><th>등급</th><th>총점 기준</th><th id="reqColHeader">정기시험 필요 점수</th><th>상태</th></tr>
+        </thead>
+        <tbody id="reqTableBody"></tbody>
+      </table>
+      <p class="table-note" id="tableNote">총점(100점 만점) = 수행점수 + 정기시험 점수(100점 만점) × 정기시험비율(%) ÷ 100. 위 표는 그 총점이 각 등급 기준에 도달하기 위한 정기시험 최소 점수예요.</p>
+    </section>
+  </div>
+
+  <footer class="page-footer">
+    실제 성취도 산정 기준과 수행·지필 비율은 학교와 과목에 따라 다를 수 있어요. 정확한 기준은 학교 안내를 따로 확인하세요.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const ratioNumber = document.getElementById('ratioNumber');
+  const ratioSlider = document.getElementById('ratioSlider');
+  const scoreNumber = document.getElementById('scoreNumber');
+  const scoreSlider = document.getElementById('scoreSlider');
+  const writtenRatioDisplay = document.getElementById('writtenRatioDisplay');
+  const perfMaxDisplay = document.getElementById('perfMaxDisplay');
+  const resetBtn = document.getElementById('resetBtn');
+  const summaryBanner = document.getElementById('summaryBanner');
+  const reqTableBody = document.getElementById('reqTableBody');
+  const rangeBar = document.getElementById('rangeBar');
+  const markerLow = document.getElementById('markerLow');
+  const markerHigh = document.getElementById('markerHigh');
+  const markerLowChip = document.getElementById('markerLowChip');
+  const markerHighChip = document.getElementById('markerHighChip');
+  const ladderSummary = document.getElementById('ladderSummary');
+  const ladderTitle = document.getElementById('ladderTitle');
+  const ladderDesc = document.getElementById('ladderDesc');
+  const tableTitle = document.getElementById('tableTitle');
+  const reqColHeader = document.getElementById('reqColHeader');
+  const tableNote = document.getElementById('tableNote');
+
+  const singleExamCheck = document.getElementById('singleExamCheck');
+  const doubleExamCard = document.getElementById('doubleExamCard');
+  const firstRatioNumber = document.getElementById('firstRatioNumber');
+  const firstRatioSlider = document.getElementById('firstRatioSlider');
+  const secondRatioDisplay = document.getElementById('secondRatioDisplay');
+  const firstScoreNumber = document.getElementById('firstScoreNumber');
+  const firstScoreSlider = document.getElementById('firstScoreSlider');
+
+  const THRESHOLDS = [['A',90],['B',80],['C',70],['D',60],['E',40]];
+
+  function clamp(v, min, max){ return Math.min(max, Math.max(min, v)); }
+
+  function updateSliderFill(slider){
+    const min = parseFloat(slider.min) || 0;
+    const max = parseFloat(slider.max) || 100;
+    const val = parseFloat(slider.value) || 0;
+    const pct = max > min ? clamp(((val - min) / (max - min)) * 100, 0, 100) : 0;
+    slider.style.background = 'linear-gradient(to right, var(--blue) 0%, var(--blue) ' + pct + '%, var(--border) ' + pct + '%, var(--border) 100%)';
+  }
+
+  function fmt(n){
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    const rounded = Math.round(n);
+    if (Math.abs(n - rounded) < 0.05) return rounded.toString();
+    return n.toFixed(1);
+  }
+
+  function gradeOf(total){
+    if (total >= 90) return 'A';
+    if (total >= 80) return 'B';
+    if (total >= 70) return 'C';
+    if (total >= 60) return 'D';
+    if (total >= 40) return 'E';
+    return 'I';
+  }
+
+  function calcResults(secured, Wu){
+    return THRESHOLDS.map(function(pair){
+      const grade = pair[0], target = pair[1];
+      let status, requiredRaw = null;
+      if (Wu <= 0){
+        if (secured >= target){ status = 'secured'; requiredRaw = 0; }
+        else { status = 'impossible'; requiredRaw = null; }
+      } else {
+        const raw = (target - secured) * 100 / Wu;
+        if (raw <= 0){ status = 'secured'; requiredRaw = 0; }
+        else if (raw > 100){ status = 'impossible'; requiredRaw = raw; }
+        else { status = 'achievable'; requiredRaw = Math.ceil(raw * 10 - 1e-9) / 10; }
+      }
+      return { grade: grade, target: target, status: status, requiredRaw: requiredRaw };
+    });
+  }
+
+  function badgeFor(status){
+    if (status === 'secured') return { cls:'badge-secured', text:'이미 확보' };
+    if (status === 'achievable') return { cls:'badge-achievable', text:'도달 가능' };
+    return { cls:'badge-impossible', text:'달성 불가' };
+  }
+
+  function renderTable(results, Wu){
+    const hasExam = Wu > 0;
+    reqTableBody.innerHTML = results.map(function(r){
+      const badge = badgeFor(r.status);
+      let reqText;
+      if (!hasExam){
+        reqText = '—';
+      } else if (r.status === 'secured'){
+        reqText = '0점';
+      } else if (r.status === 'impossible'){
+        reqText = '100점도 부족';
+      } else {
+        reqText = fmt(r.requiredRaw) + '점 이상';
+      }
+      return '<tr>' +
+        '<td class="grade-cell">' + r.grade + '</td>' +
+        '<td>' + r.target + '점 이상</td>' +
+        '<td class="req-cell">' + reqText + '</td>' +
+        '<td><span class="badge ' + badge.cls + '">' + badge.text + '</span></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function renderLadder(secured, Wu, examLabel){
+    const low = clamp(secured, 0, 100);
+    const hasExam = Wu > 0;
+    const high = hasExam ? clamp(secured + Wu, 0, 100) : low;
+
+    const lowTop = 100 - low;
+    const highTop = 100 - high;
+
+    markerLow.style.top = lowTop + '%';
+    markerLowChip.textContent = examLabel + ' 0점 → ' + fmt(low) + '점';
+
+    if (hasExam){
+      markerHigh.style.display = 'flex';
+      markerHigh.style.top = highTop + '%';
+      markerHighChip.textContent = examLabel + ' 100점 → ' + fmt(high) + '점';
+
+      rangeBar.style.display = 'block';
+      rangeBar.style.top = highTop + '%';
+      rangeBar.style.height = (lowTop - highTop) + '%';
+    } else {
+      markerHigh.style.display = 'none';
+      rangeBar.style.display = 'none';
+      markerLowChip.textContent = examLabel + ' 미반영 → ' + fmt(low) + '점 확정';
+    }
+
+    if (hasExam){
+      ladderSummary.innerHTML = examLabel + ' 0점이면 <strong>' + fmt(low) + '점 (' + gradeOf(low) + ' 등급)</strong>, ' +
+        '100점까지 받으면 <strong>' + fmt(high) + '점 (' + gradeOf(high) + ' 등급)</strong>까지 갈 수 있어요.';
+    } else {
+      ladderSummary.innerHTML = examLabel + '이 총점에 반영되지 않아요. 현재 <strong>' + fmt(low) + '점 (' + gradeOf(low) + ' 등급)</strong>으로 확정돼요.';
+    }
+  }
+
+  function renderSummaryBanner(baseText, secured, Wu, examLabel){
+    const hasExam = Wu > 0;
+    const low = clamp(secured, 0, 100);
+    const high = hasExam ? clamp(secured + Wu, 0, 100) : low;
+    const lowGrade = gradeOf(low), highGrade = gradeOf(high);
+    let tail;
+    if (!hasExam){
+      tail = examLabel + ' 결과와 관계없이 <strong>' + lowGrade + ' 등급</strong>이 확정돼요.';
+    } else if (lowGrade === highGrade){
+      tail = examLabel + ' 점수와 관계없이 <strong>' + lowGrade + ' 등급</strong>이 확정돼요.';
+    } else {
+      tail = examLabel + ' 결과에 따라 <strong>' + lowGrade + '~' + highGrade + ' 사이의 등급</strong>을 받을 수 있어요.';
+    }
+    summaryBanner.innerHTML = baseText + tail;
+  }
+
+  function isDoubleMode(){ return !singleExamCheck.checked; }
+
+  function applyExamModeVisibility(){
+    if (isDoubleMode()){
+      doubleExamCard.classList.add('is-active');
+    } else {
+      doubleExamCard.classList.remove('is-active');
+    }
+  }
+
+  function recalc(){
+    const P = clamp(parseFloat(ratioNumber.value) || 0, 0, 100);
+    const W = 100 - P;
+    const S = clamp(parseFloat(scoreNumber.value) || 0, 0, P);
+
+    let secured, Wu, examLabel, baseText;
+
+    if (isDoubleMode()){
+      const W1 = clamp(parseFloat(firstRatioNumber.value) || 0, 0, W);
+      const W2 = W - W1;
+      const E1 = clamp(parseFloat(firstScoreNumber.value) || 0, 0, 100);
+      secured = S + E1 * (W1 / 100);
+      Wu = W2;
+      examLabel = '2차 지필고사';
+      baseText = '현재 수행 <strong>' + fmt(S) + '점</strong> + 1차 지필고사 <strong>' + fmt(E1) + '점</strong> 기준, ';
+
+      ladderTitle.textContent = '2차 지필고사 점수에 따른 위치';
+      ladderDesc.textContent = '진한 띠는 2차 지필고사 0점일 때부터 100점일 때까지, 수행평가와 1차 지필고사 점수로 도달할 수 있는 총점 구간이에요.';
+      tableTitle.textContent = '등급별 2차 지필고사 최소 점수';
+      reqColHeader.textContent = '2차 지필 필요 점수';
+      tableNote.textContent = '총점(100점 만점) = 수행점수 + 1차 점수 × 1차 비율(%) ÷ 100 + 2차 점수 × 2차 비율(%) ÷ 100. 위 표는 그 총점이 각 등급 기준에 도달하기 위한 2차 지필고사 최소 점수예요.';
+    } else {
+      secured = S;
+      Wu = W;
+      examLabel = '정기시험';
+      baseText = '현재 수행 <strong>' + fmt(S) + '점</strong>(만점 ' + fmt(P) + '점) 기준, ';
+
+      ladderTitle.textContent = '정기시험 점수에 따른 위치';
+      ladderDesc.textContent = '진한 띠는 정기시험 0점일 때부터 100점일 때까지, 현재 수행점수로 도달할 수 있는 총점 구간이에요.';
+      tableTitle.textContent = '등급별 정기시험 최소 점수';
+      reqColHeader.textContent = '정기시험 필요 점수';
+      tableNote.textContent = '총점(100점 만점) = 수행점수 + 정기시험 점수(100점 만점) × 정기시험비율(%) ÷ 100. 위 표는 그 총점이 각 등급 기준에 도달하기 위한 정기시험 최소 점수예요.';
+    }
+
+    const results = calcResults(secured, Wu);
+    renderTable(results, Wu);
+    renderLadder(secured, Wu, examLabel);
+    renderSummaryBanner(baseText, secured, Wu, examLabel);
+  }
+
+  function syncFirstRatioBounds(){
+    const P = clamp(parseFloat(ratioNumber.value) || 0, 0, 100);
+    const W = 100 - P;
+    firstRatioNumber.max = W;
+    firstRatioSlider.max = W;
+    const clampedW1 = clamp(parseFloat(firstRatioNumber.value) || 0, 0, W);
+    firstRatioNumber.value = clampedW1;
+    firstRatioSlider.value = clampedW1;
+    secondRatioDisplay.textContent = fmt(W - clampedW1);
+    updateSliderFill(firstRatioSlider);
+  }
+
+  function onRatioInput(value){
+    const P = clamp(parseFloat(value) || 0, 0, 100);
+    ratioNumber.value = P;
+    ratioSlider.value = P;
+    const W = 100 - P;
+    writtenRatioDisplay.textContent = fmt(W);
+    perfMaxDisplay.textContent = fmt(P);
+
+    scoreNumber.max = P;
+    scoreSlider.max = P;
+    const clampedScore = clamp(parseFloat(scoreNumber.value) || 0, 0, P);
+    scoreNumber.value = clampedScore;
+    scoreSlider.value = clampedScore;
+
+    updateSliderFill(ratioSlider);
+    updateSliderFill(scoreSlider);
+    syncFirstRatioBounds();
+    recalc();
+  }
+
+  function onScoreInput(value){
+    const P = clamp(parseFloat(ratioNumber.value) || 0, 0, 100);
+    const S = clamp(parseFloat(value) || 0, 0, P);
+    scoreNumber.value = S;
+    scoreSlider.value = S;
+    updateSliderFill(scoreSlider);
+    recalc();
+  }
+
+  function onFirstRatioInput(value){
+    const P = clamp(parseFloat(ratioNumber.value) || 0, 0, 100);
+    const W = 100 - P;
+    const W1 = clamp(parseFloat(value) || 0, 0, W);
+    firstRatioNumber.value = W1;
+    firstRatioSlider.value = W1;
+    secondRatioDisplay.textContent = fmt(W - W1);
+    updateSliderFill(firstRatioSlider);
+    recalc();
+  }
+
+  function onFirstScoreInput(value){
+    const E1 = clamp(parseFloat(value) || 0, 0, 100);
+    firstScoreNumber.value = E1;
+    firstScoreSlider.value = E1;
+    updateSliderFill(firstScoreSlider);
+    recalc();
+  }
+
+  ratioNumber.addEventListener('input', function(e){ onRatioInput(e.target.value); });
+  ratioSlider.addEventListener('input', function(e){ onRatioInput(e.target.value); });
+  scoreNumber.addEventListener('input', function(e){ onScoreInput(e.target.value); });
+  scoreSlider.addEventListener('input', function(e){ onScoreInput(e.target.value); });
+  firstRatioNumber.addEventListener('input', function(e){ onFirstRatioInput(e.target.value); });
+  firstRatioSlider.addEventListener('input', function(e){ onFirstRatioInput(e.target.value); });
+  firstScoreNumber.addEventListener('input', function(e){ onFirstScoreInput(e.target.value); });
+  firstScoreSlider.addEventListener('input', function(e){ onFirstScoreInput(e.target.value); });
+
+  singleExamCheck.addEventListener('change', function(){
+    applyExamModeVisibility();
+    recalc();
+  });
+
+  resetBtn.addEventListener('click', function(){
+    singleExamCheck.checked = true;
+    applyExamModeVisibility();
+    onFirstRatioInput(15);
+    onFirstScoreInput(50);
+    onRatioInput(70);
+    onScoreInput(49);
+  });
+
+  // initial render
+  applyExamModeVisibility();
+  onRatioInput(70);
+  onScoreInput(49);
+  onFirstRatioInput(15);
+  onFirstScoreInput(50);
+})();
+</script>
+</body>
+</html>
